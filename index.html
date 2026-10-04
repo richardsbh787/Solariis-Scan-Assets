@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SOLARIIS SCAN</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#333333">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SOLARIIS SCAN">
+  <link rel="apple-touch-icon" href="./solariis-scan-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./solariis-scan-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./solariis-scan-512.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #F7F7F5;
+      color: #222222;
+      font-family: Arial, sans-serif;
+    }
+    main {
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+    img {
+      display: block;
+      width: 112px;
+      height: 112px;
+      margin: 0 auto 18px;
+      border-radius: 22px;
+    }
+    h1 {
+      margin: 0 0 24px;
+      font-size: 24px;
+      letter-spacing: 0.2px;
+    }
+    a {
+      display: block;
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 4px;
+      background: #333333;
+      color: #FFFFFF;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="./solariis-scan-512.png" alt="SOLARIIS SCAN">
+    <h1>SOLARIIS SCAN</h1>
+    <a href="https://script.google.com/macros/s/AKfycbwNpxIDM9A5WKmz3LEa2GWqGqESzKJOaa8y8-LlrllBEA24nU4evUKz3o0AQ3w3QONG2Q/exec">OPEN SOLARIIS SCAN</a>
+  </main>
+  <script>
+    const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbwNpxIDM9A5WKmz3LEa2GWqGqESzKJOaa8y8-LlrllBEA24nU4evUKz3o0AQ3w3QONG2Q/exec';
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    if (isStandalone) {
+      window.location.replace(appsScriptUrl);
+    }
+  </script>
+</body>
+</html>
