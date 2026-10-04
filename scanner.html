@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#333333">
+  <title>SOLARIIS SCAN</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 16px;
+      background: #F7F7F5;
+      color: #222222;
+      font-family: Arial, sans-serif;
+    }
+    main {
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin: 0 0 16px;
+      font-size: 20px;
+    }
+    #status {
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #666666;
+    }
+    #preview {
+      display: block;
+      width: 100%;
+      max-height: 70vh;
+      background: #000000;
+    }
+    #manualResult {
+      display: none;
+      margin: 14px 0;
+      padding: 12px;
+      border: 1px solid #2F5D50;
+      color: #2F5D50;
+      font-size: 14px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 11px 14px;
+      border: 1px solid #666666;
+      border-radius: 4px;
+      background: #FFFFFF;
+      color: #333333;
+      font-size: 14px;
+      font-weight: 700;
+    }
+  </style>
+  <script src="./zxing-browser-0.1.5.min.js"></script>
+</head>
+<body>
+  <main>
+    <h1>SOLARIIS SCAN</h1>
+    <div id="status" aria-live="polite">SCANNING...</div>
+    <video id="preview" autoplay muted playsinline></video>
+    <div id="manualResult" aria-live="polite"></div>
+    <button type="button" onclick="cancelScan()">CANCEL</button>
+  </main>
+
+  <script>
+    const ZXING_POSSIBLE_FORMATS_HINT = 2;
+    let scannerControls = null;
+    let scannerStopped = false;
+
+    function stopScanner() {
+      scannerStopped = true;
+
+      if (scannerControls) {
+        scannerControls.stop();
+        scannerControls = null;
+      }
+
+      const video = document.getElementById('preview');
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(function(track) {
+          track.stop();
+        });
+        video.srcObject = null;
+      }
+    }
+
+    function showError(message) {
+      stopScanner();
+      document.getElementById('status').textContent = message;
+    }
+
+    function getScannerErrorMessage(error) {
+      const name = error && error.name;
+
+      if (name === 'NotAllowedError' || name === 'SecurityError') {
+        return 'CAMERA PERMISSION DENIED';
+      }
+
+      if (name === 'NotFoundError' || name === 'OverconstrainedError') {
+        return 'CAMERA UNAVAILABLE';
+      }
+
+      return 'SCANNER INITIALIZATION FAILED';
+    }
+
+    function returnScan(serial) {
+      stopScanner();
+
+      if (window.opener) {
+        window.opener.postMessage({
+          type: 'SOLARIIS_BARCODE_SCAN',
+          serial: serial
+        }, '*');
+        window.close();
+        return;
+      }
+
+      const result = document.getElementById('manualResult');
+      result.textContent = 'SCANNED: ' + serial + '\nRETURN TO SOLARIIS AND ENTER THIS SERIAL';
+      result.style.display = 'block';
+      document.getElementById('status').textContent = 'SCAN COMPLETE';
+    }
+
+    function startScanner() {
+      scannerStopped = false;
+
+      if (!window.ZXingBrowser || !window.ZXingBrowser.BrowserMultiFormatOneDReader) {
+        showError('SCANNER INITIALIZATION FAILED');
+        return;
+      }
+
+      const formats = [
+        window.ZXingBrowser.BarcodeFormat.CODE_128,
+        window.ZXingBrowser.BarcodeFormat.CODE_39
+      ];
+      const hints = new Map([[ZXING_POSSIBLE_FORMATS_HINT, formats]]);
+      const reader = new window.ZXingBrowser.BrowserMultiFormatOneDReader(hints);
+      const video = document.getElementById('preview');
+      const status = document.getElementById('status');
+
+      reader.decodeFromVideoDevice(undefined, video, function(result) {
+        if (!result) return;
+
+        const serial = String(result.getText() || '').trim().toUpperCase();
+        if (!serial) return;
+
+        returnScan(serial);
+      }).then(function(controls) {
+        if (scannerStopped) {
+          controls.stop();
+          return;
+        }
+
+        scannerControls = controls;
+      }).catch(function(error) {
+        showError(getScannerErrorMessage(error));
+      });
+
+      status.textContent = 'SCANNING...';
+    }
+
+    function cancelScan() {
+      stopScanner();
+      window.close();
+    }
+
+    startScanner();
+  </script>
+</body>
+</html>
