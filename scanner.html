@@ -110,13 +110,14 @@
       return 'SCANNER INITIALIZATION FAILED';
     }
 
-    function returnScan(serial) {
+    function returnScan(serial, scanTimestamp) {
       stopScanner();
 
       if (window.opener) {
         window.opener.postMessage({
           type: 'SOLARIIS_BARCODE_SCAN',
-          serial: serial
+          serial: serial,
+          scanTimestamp: scanTimestamp
         }, '*');
         window.close();
         return;
@@ -151,7 +152,8 @@
         const serial = String(result.getText() || '').trim().toUpperCase();
         if (!serial) return;
 
-        returnScan(serial);
+        const scanTimestamp = new Date().toISOString();
+        returnScan(serial, scanTimestamp);
       }).then(function(controls) {
         if (scannerStopped) {
           controls.stop();
